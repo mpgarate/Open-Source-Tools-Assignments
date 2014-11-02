@@ -1,0 +1,237 @@
+## Assignment 2
+## Michael Garate N11538432
+
+###############################################################
+## Question 1 #################################################
+###############################################################
+
+# remove all lines before the table
+1,/<table/d
+
+# remove all lines after the table
+/<\/table>/,$d
+
+# remove lines with <tr>, </tr> or "small-state-header"
+/<tr>\|<\/tr>\|small-state-header/d
+
+# remove blank lines
+/^$/d
+
+# replace &nbsp; with a spaces
+s/&nbsp;/ /g
+
+# remove all html tags
+s/<[^>]*>//g
+
+# remove whitespace at beginning and end of lines
+s/^[ \t]*//g
+s/[ \t]*$//g
+
+# remove % from lines containing only a number followed by %
+s/^\([0-9]*\)%/\1/g
+
+# remove the * from lines that end with a *
+s/\*$//g
+
+###############################################################
+## Question 2 #################################################
+###############################################################
+
+BEGIN { line = 0 }
+
+{
+
+  line ++;
+
+  printf("%s",$0);
+
+  if (line > 9){
+    printf("\n");
+    line = 0;
+  } else {
+    printf(",");
+  }
+
+}
+END { }
+
+###############################################################
+## Question 3 #################################################
+###############################################################
+
+cut -d ',' -f 10 output_2.csv | grep "Fox News" -c
+
+###############################################################
+## Question 4 #################################################
+###############################################################
+
+cut -d ',' -f 10 output_2.csv | grep "SurveyUSA\|Rasmussen" -c
+
+###############################################################
+## Question 5 #################################################
+###############################################################
+
+cut -d ',' -f 10 output_2.csv | grep -vc "Fox News"
+
+###############################################################
+## Question 6 #################################################
+###############################################################
+
+
+# the following regex uses groups in order to delimit the csv input and to compare
+# the two date fields.
+# The unescaped version looks like this:
+# ^([^,]*[,]){7}([A-Z]{1}[a-z]{2} [0-9]{2}),\2
+#
+# select first 7 fields stored in group 1
+#  ^([^,]*[,]){7}
+# select a date field as 'Mmm dd' stored in group 2
+# ([A-Z]{1}[a-z]{2} [0-9]{2})
+# match presence of group 2 in adjacent field
+# ,\2
+
+grep "^\([^,]*[,]\)\{7\}\([A-Z]\{1\}[a-z]\{2\} [0-9]\{2\}\),\\2" output_2.csv
+
+###############################################################
+## Question 7 #################################################
+###############################################################
+
+# unescaped regex
+# ^([^,]*[,]){4}([5-9]{1}[0-9]{1})
+
+grep "^\([^,]*[,]\)\{4\}\([5-9]\{1\}[0-9]\{1\}\)" output_2.csv | cut -d ',' -f 4 | sort | uniq
+
+###############################################################
+## Question 8 #################################################
+###############################################################
+
+# unescaped regex
+# ^([^,]*[,]){4}([6-9]{1}[0-9]{1}|[5]{1}[1-9]{1})
+
+grep "^\([^,]*[,]\)\{4\}\([6-9]\{1\}[0-9]\{1\}\|[5]\{1\}[1-9]\{1\}\)"  output_2.csv | cut -d ',' -f 2 | sort | uniq
+
+###############################################################
+## Question 9 #################################################
+###############################################################
+
+BEGIN { 
+  FS=",";
+  greatest_difference = -1;
+  greatest_difference_org = "";
+}
+
+{
+  organization = $10;
+  difference = $3 - $5;
+  difference = sqrt(difference * difference);
+
+  if (difference > greatest_difference){
+    if (difference != 100){
+      greatest_difference = difference;
+      greatest_difference_org = organization;
+    }
+  }
+}
+END { 
+  print(greatest_difference_org);
+}
+
+###############################################################
+## Question 10 #################################################
+###############################################################
+
+BEGIN { FS=",";}
+
+{
+
+  arr[$1] += 1;
+
+}
+
+END { 
+  greatest_state_name = "";
+  greatest_count = -1;
+
+  for(state_name in arr){
+    count = arr[state_name];
+    if (count > greatest_count){
+      greatest_state_name = state_name;
+      greatest_count = count;
+    }
+  }
+
+  print(greatest_state_name);
+}
+
+###############################################################
+## Question 11 #################################################
+###############################################################
+
+BEGIN { FS=",";}
+
+{
+
+  arr[$10] += 1;
+
+}
+
+END { 
+  
+  for(polling_station in arr){
+    count = arr[polling_station];
+    printf("%s %s\n", count, polling_station);
+  }
+}
+
+###############################################################
+## Question 12 #################################################
+###############################################################
+
+BEGIN { FS=",";}
+
+{
+  arr[$1] += 1;
+
+}
+
+END { 
+  
+  total_states = length(arr);
+  total_polls = 0;
+  for(state in arr){
+    count = arr[state];
+    total_polls += count;
+  }
+
+  printf("%f\n", (total_polls / total_states));
+}
+
+###############################################################
+## Question 13 #################################################
+###############################################################
+
+BEGIN { FS=",";}
+
+{
+  dem_scores[$10] += $3;
+  score_counts[$10]++;
+}
+
+END { 
+
+  highest_average_org = "";
+  highest_average = -1;
+
+  for (organization in dem_scores){
+    dem_score = dem_scores[organization];
+    score_count = score_counts[organization];
+    average = (dem_score / score_count);
+
+    if (average > highest_average){
+      highest_average = average;
+      highest_average_org = organization;
+    }
+  }
+
+  print(highest_average_org);
+}
