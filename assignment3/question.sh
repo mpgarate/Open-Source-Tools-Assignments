@@ -5,6 +5,8 @@
 ############################
 
 BASE_DIR="$HOME/.question/"
+# USERS_PATH="/home/unixtool/data/question/users"
+USERS_PATH="/home/mike/.question-users"
 
 ############################
 ######## Functions #########
@@ -77,19 +79,28 @@ create_answer(){
 }
 
 list_user_questions(){
+    user=$1
+    questions_path=/home/"${user}"/.question/questions/
 
-    for question in /home/"${user}"/.question/questions/*; do
-        question=$(basename ${question})
-        echo "${user}/${question}"
-    done
+    if [[ -e $questions_path ]]; then
+        for question in "${questions_path}*"; do
+            question=$(basename ${question})
+            echo "${user}/${question}"
+        done
+    fi
 }
 
 list_questions(){
     if [ ! -z "$user" ]; then
-        echo "user is ${user}"
-        list_user_questions
+        list_user_questions "$user"
         exit 0
     fi
+
+    for user in $(cat "$USERS_PATH"); do
+        list_user_questions "$user"
+    done
+    
+    exit 0
 }
 
 ############################
