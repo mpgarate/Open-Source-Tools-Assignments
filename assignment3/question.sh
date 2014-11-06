@@ -76,6 +76,22 @@ create_answer(){
     echo "$answer_text" > "$answer_path"
 }
 
+list_user_questions(){
+
+    for question in /home/"${user}"/.question/questions/*; do
+        question=$(basename ${question})
+        echo "${user}/${question}"
+    done
+}
+
+list_questions(){
+    if [ ! -z "$user" ]; then
+        echo "user is ${user}"
+        list_user_questions
+        exit 0
+    fi
+}
+
 ############################
 ###### Main Execution ######
 ############################
@@ -102,11 +118,19 @@ if [ "$1" == "answer" ]; then
     answer_name=$3
     answer_text=$4
 
-    if [ -z "answer" ]; then
+    if [ -z "$answer_text" ]; then
         read -p "Enter answer: " answer
     fi
 
     create_answer
+    exit 0
+fi
+
+# list all questions
+
+if [ "$1" == "list" ]; then
+    user=$2
+    list_questions
     exit 0
 fi
 
@@ -115,3 +139,6 @@ if [ "$1" == "reset" ]; then
     rm -rf "$BASE_DIR"
     exit 0
 fi
+
+echo -e "Please provide arguments in the format: \n\tquestion option [args]" >&2
+exit 1
