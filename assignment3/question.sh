@@ -103,6 +103,13 @@ list_questions(){
     exit 0
 }
 
+vote_on_question(){
+    vote_direction="$1"
+    question_id="$2"
+
+    
+}
+
 ############################
 ###### Main Execution ######
 ############################
@@ -144,6 +151,10 @@ if [ "$1" == "list" ]; then
     list_questions
     exit 0
 fi
+
+# if [ "$1" == vote ]; then
+#    vote_on_question $2 $3
+# fi
 
 ## reset command for debugging 
 if [ "$1" == "reset" ]; then
