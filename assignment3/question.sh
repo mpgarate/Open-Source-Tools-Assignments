@@ -103,21 +103,52 @@ list_questions(){
     exit 0
 }
 
-vote_on_question(){
+vote_on_question_or_answer(){
     vote_direction="$1"
     question_id="$2"
-    question_id_without_username=$(echo "${question_id}"| cut -d "/" -f2)
-    username=$(echo "${question_id}"| cut -d "/" -f1)
+    answer_id="$3"
+
+    question_id_without_username=$(echo "${question_id}" | cut -d "/" -f2)
+    username=$(echo "${question_id}" | cut -d "/" -f1)
 
     vote_path="${BASE_DIR}votes/${username}"
 
-    if [ ! -z "$question_id" ]; then
-        if [ ! -d "$vote_path" ]; then
-            mkdir "${vote_path}"
-        fi
-        echo "${vote_direction}" > "${vote_path}/${question_id_without_username}"
+    if [ -z "$question_id" ]; then
+        echo "Please supply a question id when voting." >&2
+        exit 1
     fi
 
+
+    if [ ! -d "$vote_path" ]; then
+        mkdir "${vote_path}"
+    fi
+
+    if [ ! -z "$answer_id" ]; then
+        vote_direction="${vote_direction} ${answer_id}"
+    fi
+    
+    echo "${vote_direction}" >> "${vote_path}/${question_id_without_username}"
+
+}
+
+view_question(){
+    question_id=$1
+    question_user=$(echo "$question_id" | cut -d "/" -f1)
+    question_id_without_username=$(echo "$question_id" | cut -d "/" -f2)
+
+    question_path="/home/${question_user}/.question/questions/${question_id_without_username}"
+    cat "$question_path"
+
+    for user in $(cat "$USERS_PATH"); do
+        answer_path="/home/${user}/.question/answers/${question_id}/"
+
+        if [ -d "$answer_path" ]; then
+            for answer in "${answer_path}"*; do
+                echo "===="
+                cat "$answer"
+            done
+        fi
+    done
 }
 
 ############################
@@ -161,10 +192,15 @@ if [ "$1" == "list" ]; then
     exit 0
 fi
 
+# vote on a question or answer
+if [ "$1" == "vote" ]; then
+    vote_on_question_or_answer $2 $3 $4
+    exit 0
+fi
 
-if [ "$1" == vote ]; then
-   vote_on_question $2 $3
-   exit 0
+if [ "$1" == "view" ]; then
+    view_question $2
+    exit 0
 fi
 
 ## reset command for debugging 
@@ -172,6 +208,7 @@ if [ "$1" == "reset" ]; then
     rm -rf "$BASE_DIR"
     exit 0
 fi
+
 
 echo -e "Please provide arguments in the format: \n\tquestion option [args]" >&2
 exit 1
