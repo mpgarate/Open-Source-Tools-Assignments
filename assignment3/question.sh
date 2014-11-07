@@ -132,8 +132,51 @@ vote_on_question_or_answer(){
 }
 
 echo_votes_for_answer(){
-    answer_id=$1
+    question_id="$1"
+    answer_id="$2"
     echo "1 ${answer_id}"
+
+    
+    votes_tmp_file="${BASE_DIR}.votes_tmp"
+    touch "$votes_tmp_file"
+
+    for user in $(cat "$USERS_PATH"); do
+        vote_path="/home/${user}/.question/votes/${question_id}"
+
+        if [ -f "$vote_path" ]; then
+            vote_direction=$(awk -v answer_id="$answer_id" '
+                {
+                    vote_direction=""
+                    if ($2 == answer_id){
+                        vote_direction=$1
+                    }
+                }
+                END {
+                    print vote_direction
+                }
+                ' "$vote_path")
+
+            if [ ! "$vote_direction" == "" ]; then
+                echo "$vote_direction" >> "$votes_tmp_file"
+            fi
+        fi
+
+    done
+
+    vote_count=$(awk '
+        {
+            votes[$1] += 1
+        }
+        END {
+            total = votes["up"] - votes["down"]
+            print total
+        }
+    ' "$votes_tmp_file") 
+
+    echo "$vote_count"
+
+    rm "$votes_tmp_file"
+
 }
 
 view_question(){
@@ -154,7 +197,7 @@ view_question(){
                 
                 echo "===="
 
-                echo_votes_for_answer "$answer_id"
+                echo_votes_for_answer "$question_id" "$answer_id"
                 cat "$answer_path"
             done
         fi
