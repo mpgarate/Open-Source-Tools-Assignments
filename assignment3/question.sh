@@ -134,8 +134,6 @@ vote_on_question_or_answer(){
 echo_votes_for_answer(){
     question_id="$1"
     answer_id="$2"
-    echo "1 ${answer_id}"
-
     
     votes_tmp_file="${BASE_DIR}.votes_tmp"
     touch "$votes_tmp_file"
@@ -173,7 +171,7 @@ echo_votes_for_answer(){
         }
     ' "$votes_tmp_file") 
 
-    echo "$vote_count"
+    echo "${vote_count} ${answer_id}"
 
     rm "$votes_tmp_file"
 
@@ -187,14 +185,15 @@ view_question(){
     question_path="/home/${question_user}/.question/questions/${question_id_without_username}"
     cat "$question_path"
 
-    for user in $(cat "$USERS_PATH"); do
-        answer_path="/home/${user}/.question/answers/${question_id}/"
+    for answer_user in $(cat "$USERS_PATH"); do
+        answer_dir="/home/${answer_user}/.question/answers/${question_id}/"
 
-        if [ -d "$answer_path" ]; then
-            for answer_path in "${answer_path}"*; do
+        if [ -d "$answer_dir" ]; then
+
+            for answer_path in "${answer_dir}"*; do
                 answer_id=$(basename "$answer_path")
-                answer_id="${user}/${answer_id}"
-                
+                answer_id="${answer_user}/${answer_id}"
+
                 echo "===="
 
                 echo_votes_for_answer "$question_id" "$answer_id"
