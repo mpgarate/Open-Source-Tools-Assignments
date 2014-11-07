@@ -131,6 +131,11 @@ vote_on_question_or_answer(){
 
 }
 
+echo_votes_for_answer(){
+    answer_id=$1
+    echo "1 ${answer_id}"
+}
+
 view_question(){
     question_id=$1
     question_user=$(echo "$question_id" | cut -d "/" -f1)
@@ -143,9 +148,14 @@ view_question(){
         answer_path="/home/${user}/.question/answers/${question_id}/"
 
         if [ -d "$answer_path" ]; then
-            for answer in "${answer_path}"*; do
+            for answer_path in "${answer_path}"*; do
+                answer_id=$(basename "$answer_path")
+                answer_id="${user}/${answer_id}"
+                
                 echo "===="
-                cat "$answer"
+
+                echo_votes_for_answer "$answer_id"
+                cat "$answer_path"
             done
         fi
     done
