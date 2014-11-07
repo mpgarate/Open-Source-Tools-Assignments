@@ -1,12 +1,13 @@
 #!/bin/bash
 
+# Michael Garate mg3626
+
 ############################
 ######## Constants #########
 ############################
 
 BASE_DIR="$HOME/.question/"
-# USERS_PATH="/home/unixtool/data/question/users"
-USERS_PATH="/home/mike/.question-users"
+USERS_PATH="/home/unixtool/data/question/users"
 
 ############################
 ######## Functions #########
@@ -82,9 +83,9 @@ list_user_questions(){
     user=$1
     questions_path=/home/"${user}"/.question/questions/
 
-    if [[ -e $questions_path ]]; then
-        for question in "${questions_path}*"; do
-            question=$(basename ${question})
+    if [[ -e "$questions_path" ]] && [ -x "$questions_path" ]; then
+        for question in /home/"$user"/.question/questions/*; do
+            question=$(basename "$question")
             echo "${user}/${question}"
         done
     fi
@@ -134,6 +135,10 @@ vote_on_question_or_answer(){
 echo_votes_for_question_or_answer(){
     question_id="$1"
     answer_id="$2"
+
+    if [ -z "$answer_id" ]; then
+        answer_id="";
+    fi
     
     votes_tmp_file="${BASE_DIR}.votes_tmp"
     touch "$votes_tmp_file"
@@ -143,14 +148,17 @@ echo_votes_for_question_or_answer(){
 
         if [ -f "$vote_path" ]; then
             vote_direction=$(awk -v answer_id="$answer_id" '
-                {
+                BEGIN{ 
                     vote_direction=""
-                    if ($2 == answer_id){
-                        vote_direction=$1
-                    }
-
+                 }{
                     if (answer_id == ""){
-                        vote_direction=$1
+                        if ($2 ==""){
+                            vote_direction=$1
+                        }
+                    } else {
+                        if ($2 == answer_id){
+                            vote_direction=$1
+                        }
                     }
                 }
                 END {
