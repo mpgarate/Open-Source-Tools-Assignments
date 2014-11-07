@@ -106,8 +106,18 @@ list_questions(){
 vote_on_question(){
     vote_direction="$1"
     question_id="$2"
+    question_id_without_username=$(echo "${question_id}"| cut -d "/" -f2)
+    username=$(echo "${question_id}"| cut -d "/" -f1)
 
-    
+    vote_path="${BASE_DIR}votes/${username}"
+
+    if [ ! -z "$question_id" ]; then
+        if [ ! -d "$vote_path" ]; then
+            mkdir "${vote_path}"
+        fi
+        echo "${vote_direction}" > "${vote_path}/${question_id_without_username}"
+    fi
+
 }
 
 ############################
@@ -144,17 +154,18 @@ if [ "$1" == "answer" ]; then
     exit 0
 fi
 
-# list all questions
-
+# list all questions or all questions for a particular user
 if [ "$1" == "list" ]; then
     user=$2
     list_questions
     exit 0
 fi
 
-# if [ "$1" == vote ]; then
-#    vote_on_question $2 $3
-# fi
+
+if [ "$1" == vote ]; then
+   vote_on_question $2 $3
+   exit 0
+fi
 
 ## reset command for debugging 
 if [ "$1" == "reset" ]; then
