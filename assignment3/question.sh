@@ -193,6 +193,11 @@ view_question(){
 
     question_path="/home/${question_user}/.question/questions/${question_id_without_username}"
 
+    if [ ! -f "$question_path" ]; then
+        echo "no such question: ${question_id}" >&2
+        exit 1
+    fi
+
     echo_votes_for_question_or_answer "$question_id"
 
     cat "$question_path"
@@ -264,7 +269,12 @@ if [ "$1" == "vote" ]; then
 fi
 
 if [ "$1" == "view" ]; then
-    view_question $2
+    for arg in "$@"
+    do
+        if [ ! "$arg" == "$1" ]; then
+            view_question "$arg"
+        fi
+    done
     exit 0
 fi
 
