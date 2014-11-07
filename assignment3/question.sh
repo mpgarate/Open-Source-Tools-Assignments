@@ -131,7 +131,7 @@ vote_on_question_or_answer(){
 
 }
 
-echo_votes_for_answer(){
+echo_votes_for_question_or_answer(){
     question_id="$1"
     answer_id="$2"
     
@@ -146,6 +146,10 @@ echo_votes_for_answer(){
                 {
                     vote_direction=""
                     if ($2 == answer_id){
+                        vote_direction=$1
+                    }
+
+                    if (answer_id == ""){
                         vote_direction=$1
                     }
                 }
@@ -171,7 +175,12 @@ echo_votes_for_answer(){
         }
     ' "$votes_tmp_file") 
 
-    echo "${vote_count} ${answer_id}"
+    if [ -z "$answer_id" ]
+    then
+        echo "$vote_count"
+    else
+        echo "${vote_count} ${answer_id}"
+    fi
 
     rm "$votes_tmp_file"
 
@@ -183,7 +192,11 @@ view_question(){
     question_id_without_username=$(echo "$question_id" | cut -d "/" -f2)
 
     question_path="/home/${question_user}/.question/questions/${question_id_without_username}"
+
+    echo_votes_for_question_or_answer "$question_id"
+
     cat "$question_path"
+
 
     for answer_user in $(cat "$USERS_PATH"); do
         answer_dir="/home/${answer_user}/.question/answers/${question_id}/"
@@ -196,7 +209,7 @@ view_question(){
 
                 echo "===="
 
-                echo_votes_for_answer "$question_id" "$answer_id"
+                echo_votes_for_question_or_answer "$question_id" "$answer_id"
                 cat "$answer_path"
             done
         fi
